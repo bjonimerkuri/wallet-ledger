@@ -50,6 +50,7 @@ describe('Wallet API (e2e)', () => {
       .get('/accounts/me')
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
+    expect(res.body.email).toBeDefined();
     return res.body.balance as number;
   };
 

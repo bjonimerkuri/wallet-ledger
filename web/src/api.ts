@@ -1,12 +1,15 @@
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export type Account = { id: string; balance: number; currency: string };
+export type Account = { id: string; userId: string; email: string; balance: number; currency: string };
 export type TransferRow = {
   id: string;
   amount: number;
+  currency?: string;
   direction?: 'sent' | 'received';
+  counterpartyEmail?: string;
   createdAt: string;
 };
+export type HistoryPage = { items: TransferRow[]; nextCursor: string | null };
 
 let token: string | null = localStorage.getItem('token');
 
@@ -63,7 +66,8 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
   account: () => request<Account>('/accounts/me'),
-  transfers: () => request<TransferRow[]>('/transfers'),
+  transfers: (before?: string) =>
+    request<HistoryPage>(`/transfers?limit=10${before ? `&before=${encodeURIComponent(before)}` : ''}`),
   transfer: (key: string, toEmail: string, amount: number) =>
     request<TransferRow>('/transfers', {
       method: 'POST',

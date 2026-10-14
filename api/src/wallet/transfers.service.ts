@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, LessThan, Repository } from 'typeorm';
-import { User } from '../auth/user.entity';
 import { Account } from './account.entity';
 import { LedgerEntry } from './ledger-entry.entity';
 import { assertCanTransfer } from './ledger.rules';
@@ -26,8 +25,8 @@ export class TransfersService {
   ) {}
 
   async accountOf(userId: string) {
-    const { id, balance, currency } = await this.accounts.findOneByOrFail({ userId });
-    return { id, balance, currency };
+    const { id, email, balance, currency } = await this.accounts.findOneByOrFail({ userId });
+    return { id, email, balance, currency };
   }
 
   async create(userId: string, key: string, toEmail: string, amount: number) {
@@ -38,9 +37,8 @@ export class TransfersService {
         const existing = await m.findOneBy(Transfer, { fromAccountId: from.id, idempotencyKey: key });
         if (existing) return existing;
 
-        const toUser = await m.findOneBy(User, { email: toEmail });
-        if (!toUser) throw new NotFoundException('Recipient not found');
-        const to = await m.findOneByOrFail(Account, { userId: toUser.id });
+        const to = await m.findOne(Account, { where: { email: toEmail } });
+        if (!to) throw new NotFoundException('Recipient not found');
 
         const locked = new Map<string, Account>();
         for (const id of [from.id, to.id].sort()) {
@@ -62,6 +60,7 @@ export class TransfersService {
           m.create(Transfer, {
             fromAccountId: src.id,
             toAccountId: dst.id,
+            toEmail: dst.email,
             amount,
             idempotencyKey: key,
           }),
@@ -94,7 +93,9 @@ export class TransfersService {
     const items = rows.slice(0, limit).map((t) => ({
       id: t.id,
       amount: t.amount,
+      currency: acc.currency,
       direction: (t.fromAccountId === acc.id ? 'sent' : 'received') as 'sent' | 'received',
+      counterpartyEmail: t.fromAccountId === acc.id ? t.toEmail : '',
       createdAt: t.createdAt,
     }));
     return {

@@ -211,3 +211,23 @@ button.link:hover {
   text-align: right;
   font-size: 12px;
 }
+
+.topbar .user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary, #4f6ef7);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

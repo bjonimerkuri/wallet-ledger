@@ -13,6 +13,9 @@ export class Transfer {
   @Column()
   toAccountId: string;
 
+  @Column({ default: '' })
+  toEmail: string;
+
   @Column({ type: 'bigint', transformer: bigintToNumber })
   amount: number;
 

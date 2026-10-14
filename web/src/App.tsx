@@ -1,6 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
-import { api, hasToken, setToken } from './api';
+import { api, hasToken, setToken, type TransferRow } from './api';
 
 const money = (minor: number, currency = 'EUR') =>
   new Intl.NumberFormat('en', { style: 'currency', currency }).format(minor / 100);
@@ -86,7 +92,37 @@ function AuthForm({ onDone }: { onDone: () => void }) {
 function Wallet({ onLogout }: { onLogout: () => void }) {
   const qc = useQueryClient();
   const account = useQuery({ queryKey: ['account'], queryFn: api.account, retry: false });
-  const transfers = useQuery({ queryKey: ['transfers'], queryFn: api.transfers, retry: false });
+  const [pages, setPages] = useState<string[]>([]);
+
+  const pagesQ = useQuery({
+    queryKey: ['transfer-pages', pages],
+    queryFn: () => api.transfers(pages[pages.length - 1]),
+    placeholderData: keepPreviousData,
+    retry: false,
+  });
+
+  const flatPages = useQueries({
+    queries: pages.map((cursor) => ({
+      queryKey: ['transfer-page', cursor],
+      queryFn: () => api.transfers(cursor),
+    })),
+  });
+
+  const firstPageItems = pagesQ.data?.items ?? [];
+  const laterItems = flatPages.flatMap((q) => q.data?.items ?? []);
+  const history: TransferRow[] = [...firstPageItems, ...laterItems].filter(
+    (t, i, arr) => arr.findIndex((x) => x.id === t.id) === i,
+  );
+  const nextCursor = pagesQ.data?.nextCursor ?? null;
+  const historyLoading = pagesQ.isLoading;
+  const historyError = pagesQ.error;
+  const loadingMore = flatPages.some((q) => q.isFetching);
+
+  useEffect(() => {
+    const reset = () => setPages([]);
+    window.addEventListener('unauthorized', reset);
+    return () => window.removeEventListener('unauthorized', reset);
+  }, []);
   const [toEmail, setToEmail] = useState('');
   const [amount, setAmount] = useState('');
   const [key, setKey] = useState(() => crypto.randomUUID());
@@ -117,9 +153,12 @@ function Wallet({ onLogout }: { onLogout: () => void }) {
     <div className="stack">
       <header className="topbar">
         <span className="brand">Wallet</span>
-        <button className="ghost" onClick={onLogout}>
-          Log out
-        </button>
+        <div className="user">
+          {account.data && <span className="muted">{account.data.email}</span>}
+          <button className="ghost" onClick={onLogout}>
+            Log out
+          </button>
+        </div>
       </header>
 
       <section className="card balance-card">
@@ -166,22 +205,37 @@ function Wallet({ onLogout }: { onLogout: () => void }) {
 
       <section className="card">
         <h2>History</h2>
-        {transfers.isLoading && <p className="muted">Loading…</p>}
-        {transfers.error && <p className="error">{transfers.error.message}</p>}
-        {transfers.data?.length === 0 && <p className="muted">No transfers yet.</p>}
-        {transfers.data && transfers.data.length > 0 && (
-          <ul className="history">
-            {transfers.data.map((t) => (
-              <li key={t.id}>
-                <span className={t.direction === 'sent' ? 'minus' : 'plus'}>
-                  {t.direction === 'sent' ? '−' : '+'}
-                  {money(t.amount)}
-                </span>
-                <span className="muted">{t.direction === 'sent' ? 'Sent' : 'Received'}</span>
-                <span className="muted date">{new Date(t.createdAt).toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
+        {historyLoading && <p className="muted">Loading…</p>}
+        {historyError && <p className="error">{historyError.message}</p>}
+        {!historyLoading && !historyError && history.length === 0 && (
+          <p className="muted">No transfers yet.</p>
+        )}
+        {history.length > 0 && (
+          <>
+            <ul className="history">
+              {history.map((t) => (
+                <li key={t.id}>
+                  <span className={t.direction === 'sent' ? 'minus' : 'plus'}>
+                    {t.direction === 'sent' ? '−' : '+'}
+                    {money(t.amount)}
+                  </span>
+                  <span className="muted">
+                    {t.direction === 'sent' ? `Sent${t.counterpartyEmail ? ` · ${t.counterpartyEmail}` : ''}` : 'Received'}
+                  </span>
+                  <span className="muted date">{new Date(t.createdAt).toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+            {nextCursor && (
+              <button
+                className="ghost load-more"
+                onClick={() => setPages([...pages, nextCursor])}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Loading…' : 'Load more'}
+              </button>
+            )}
+          </>
         )}
       </section>
     </div>

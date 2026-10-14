@@ -18,7 +18,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await this.ds.transaction(async (m) => {
       const u = await m.save(m.create(User, { email, passwordHash }));
-      await m.save(m.create(Account, { userId: u.id, balance: DEMO_FUNDS }));
+      await m.save(m.create(Account, { userId: u.id, email: u.email, balance: DEMO_FUNDS }));
       return u;
     });
     return this.token(user);
