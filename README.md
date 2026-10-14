@@ -2,7 +2,7 @@
 
 A peer-to-peer money wallet built to demonstrate **correctness under concurrency**, not pixel-perfect UI. Double-entry accounting, atomic transfers, idempotent retries, pessimistic row locking, cursor pagination, JWT auth, rate limiting, OpenAPI docs, migrations, and a full unit + E2E test suite in CI.
 
-![CI](https://github.com/YOUR_USERNAME/wallet-ledger/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/bjonimerkuri/wallet-ledger/actions/workflows/ci.yml/badge.svg)
 
 ## Screens
 
