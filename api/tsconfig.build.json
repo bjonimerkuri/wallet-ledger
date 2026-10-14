@@ -3,6 +3,12 @@
   "compilerOptions": {
     "rootDir": "./src"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test", "**/*.e2e-spec.ts", "src/data-source.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "**/*.e2e-spec.ts",
+    "src/data-source.ts",
+    "api.ts"
+  ]
 }

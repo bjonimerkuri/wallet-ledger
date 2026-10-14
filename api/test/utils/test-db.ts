@@ -13,7 +13,6 @@ function psql(url: string, sql: string) {
 export function resetDatabase() {
   psql(ADMIN_URL, `DROP DATABASE IF EXISTS ${DATABASE_NAME} WITH (FORCE)`);
   psql(ADMIN_URL, `CREATE DATABASE ${DATABASE_NAME}`);
-  psql(DATABASE_URL, `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
 }
 
 export async function recreateSchema(ds: DataSource) {

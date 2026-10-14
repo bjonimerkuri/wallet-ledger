@@ -1,0 +1,26 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "api": {
+      "root": "api",
+      "framework": "nestjs",
+      "buildCommand": "npm run build"
+    },
+    "web": {
+      "root": "web",
+      "framework": "vite",
+      "bindings": [
+        { "type": "service", "service": "api", "format": "url", "env": "API_URL" }
+      ]
+    }
+  },
+  "rewrites": [
+    { "source": "/auth/(.*)", "destination": { "service": "api" } },
+    { "source": "/accounts/(.*)", "destination": { "service": "api" } },
+    { "source": "/transfers/(.*)", "destination": { "service": "api" } },
+    { "source": "/health", "destination": { "service": "api" } },
+    { "source": "/docs", "destination": { "service": "api" } },
+    { "source": "/docs/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
+}
