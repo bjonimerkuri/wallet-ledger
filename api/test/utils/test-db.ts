@@ -21,7 +21,7 @@ export async function recreateSchema(ds: DataSource) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       await ds.query('SELECT 1');
-      await ds.synchronize(true);
+      await ds.runMigrations();
       return;
     } catch (error) {
       lastError = error;

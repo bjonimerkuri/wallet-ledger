@@ -29,7 +29,10 @@ const configNumber = (key: string, fallback: number) => {
         url: config.get('DATABASE_URL') ?? 'postgres://postgres:postgres@localhost:5432/wallet',
         ssl: config.get('DATABASE_SSL') === 'true' ? { rejectUnauthorized: false } : undefined,
         autoLoadEntities: true,
-        synchronize: config.get('NODE_ENV') !== 'production',
+        migrations: [`${__dirname}/migrations/*.{ts,js}`],
+        migrationsRun: true,
+        synchronize: false,
+        retryAttempts: 1,
       }),
     }),
     JwtModule.registerAsync({
