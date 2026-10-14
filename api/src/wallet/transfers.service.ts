@@ -1,11 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { User } from '../auth/user.entity';
+import { DataSource, LessThan, Repository } from 'typeorm';
 import { Account } from './account.entity';
 import { LedgerEntry } from './ledger-entry.entity';
 import { assertCanTransfer } from './ledger.rules';
 import { Transfer } from './transfer.entity';
+
+export type HistoryPage = {
+  items: {
+    id: string;
+    amount: number;
+    direction: 'sent' | 'received';
+    createdAt: Date;
+  }[];
+  nextCursor: string | null;
+};
 
 @Injectable()
 export class TransfersService {
@@ -15,21 +24,21 @@ export class TransfersService {
     @InjectRepository(Transfer) private readonly transfers: Repository<Transfer>,
   ) {}
 
-  accountOf(userId: string) {
-    return this.accounts.findOneByOrFail({ userId });
+  async accountOf(userId: string) {
+    const { id, email, balance, currency } = await this.accounts.findOneByOrFail({ userId });
+    return { id, email, balance, currency };
   }
 
   async create(userId: string, key: string, toEmail: string, amount: number) {
     const from = await this.accountOf(userId);
 
-    const existing = await this.transfers.findOneBy({ fromAccountId: from.id, idempotencyKey: key });
-    if (existing) return existing;
-
     try {
       return await this.ds.transaction(async (m) => {
-        const toUser = await m.findOneBy(User, { email: toEmail });
-        if (!toUser) throw new NotFoundException('Recipient not found');
-        const to = await m.findOneByOrFail(Account, { userId: toUser.id });
+        const existing = await m.findOneBy(Transfer, { fromAccountId: from.id, idempotencyKey: key });
+        if (existing) return existing;
+
+        const to = await m.findOne(Account, { where: { email: toEmail } });
+        if (!to) throw new NotFoundException('Recipient not found');
 
         const locked = new Map<string, Account>();
         for (const id of [from.id, to.id].sort()) {
@@ -51,6 +60,7 @@ export class TransfersService {
           m.create(Transfer, {
             fromAccountId: src.id,
             toAccountId: dst.id,
+            toEmail: dst.email,
             amount,
             idempotencyKey: key,
           }),
@@ -69,18 +79,28 @@ export class TransfersService {
     }
   }
 
-  async history(userId: string) {
+  async history(userId: string, limit: number, before?: string): Promise<HistoryPage> {
     const acc = await this.accountOf(userId);
     const rows = await this.transfers.find({
-      where: [{ fromAccountId: acc.id }, { toAccountId: acc.id }],
+      where: [
+        { fromAccountId: acc.id, ...(before ? { createdAt: LessThan(new Date(before)) } : {}) },
+        { toAccountId: acc.id, ...(before ? { createdAt: LessThan(new Date(before)) } : {}) },
+      ],
       order: { createdAt: 'DESC' },
-      take: 50,
+      take: limit + 1,
     });
-    return rows.map((t) => ({
+    const hasMore = rows.length > limit;
+    const items = rows.slice(0, limit).map((t) => ({
       id: t.id,
       amount: t.amount,
-      direction: t.fromAccountId === acc.id ? 'sent' : 'received',
+      currency: acc.currency,
+      direction: (t.fromAccountId === acc.id ? 'sent' : 'received') as 'sent' | 'received',
+      counterpartyEmail: t.fromAccountId === acc.id ? t.toEmail : '',
       createdAt: t.createdAt,
     }));
+    return {
+      items,
+      nextCursor: hasMore && items.length ? items[items.length - 1].createdAt.toISOString() : null,
+    };
   }
 }

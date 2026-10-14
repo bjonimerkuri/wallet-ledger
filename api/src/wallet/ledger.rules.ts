@@ -1,6 +1,5 @@
 import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 
-/** Pure business rules, kept separate so they are easy to unit test. */
 export function assertCanTransfer(
   fromId: string,
   toId: string,

@@ -5,36 +5,36 @@ import {
   Get,
   Headers,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { IsEmail, IsInt, Min } from 'class-validator';
-import { JwtGuard } from '../auth/jwt.guard';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthenticatedRequest, JwtGuard } from '../auth/jwt.guard';
+import { CreateTransferDto, HistoryQueryDto } from './dtos';
 import { TransfersService } from './transfers.service';
 
-class CreateTransferDto {
-  @IsEmail()
-  toEmail: string;
-
-  @IsInt()
-  @Min(1)
-  amount: number;
-}
-
+@ApiTags('wallet')
+@ApiBearerAuth()
 @Controller()
 @UseGuards(JwtGuard)
 export class WalletController {
   constructor(private readonly transfers: TransfersService) {}
 
   @Get('accounts/me')
-  async me(@Req() req: any) {
-    const { id, balance, currency } = await this.transfers.accountOf(req.user.sub);
-    return { id, balance, currency };
+  @ApiOperation({ summary: 'Current user account balance' })
+  me(@Req() req: AuthenticatedRequest) {
+    return this.transfers.accountOf(req.user.sub);
   }
 
   @Post('transfers')
+  @ApiOperation({ summary: 'Send money; safe to retry with the same Idempotency-Key' })
+  @ApiHeader({
+    name: 'Idempotency-Key',
+    description: 'Client-generated unique key (e.g. UUID). Replays return the original transfer.',
+  })
   create(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Headers('idempotency-key') key: string | undefined,
     @Body() dto: CreateTransferDto,
   ) {
@@ -43,7 +43,8 @@ export class WalletController {
   }
 
   @Get('transfers')
-  history(@Req() req: any) {
-    return this.transfers.history(req.user.sub);
+  @ApiOperation({ summary: 'Paginated transfer history (cursor-based)' })
+  history(@Req() req: AuthenticatedRequest, @Query() query: HistoryQueryDto) {
+    return this.transfers.history(req.user.sub, query.limit ?? 50, query.before);
   }
 }
