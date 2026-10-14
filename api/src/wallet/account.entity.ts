@@ -1,6 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-// Postgres returns bigint as string; amounts here stay below 2^53, so Number is safe.
 export const bigintToNumber = {
   to: (v: number) => v,
   from: (v: string | null) => (v === null ? v : Number(v)),
