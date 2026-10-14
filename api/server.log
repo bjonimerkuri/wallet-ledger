@@ -1,0 +1,45 @@
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +37ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mThrottlerModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigHostModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJwtModule dependencies initialized[39m[38;5;3m +93ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmCoreModule dependencies initialized[39m[38;5;3m +50ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTypeOrmModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWalletModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/health}:[39m[38;5;3m +19ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/register, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/login, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mWalletController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/accounts/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/transfers, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/transfers, GET} route[39m[38;5;3m +21ms[39m
+[32m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+[31m[Nest] 14939  - [39m10/14/2026, 11:07:37 AM [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3001[39m[38;5;3m +2ms[39m
+node:net:1908
+    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
+               ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at Server.listen (node:net:2067:7)
+    at ExpressAdapter.listen (/workspace/api/node_modules/@nestjs/platform-express/adapters/express-adapter.js:95:32)
+    at /workspace/api/node_modules/@nestjs/core/nest-application.js:183:30
+    at new Promise (<anonymous>)
+    at NestApplication.listen (/workspace/api/node_modules/@nestjs/core/nest-application.js:173:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async bootstrap (/workspace/api/dist/main.js:29:5) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v20.20.2

@@ -1,0 +1,50 @@
+From 63aea311a855804a313fb568ea37c95081c7179a Mon Sep 17 00:00:00 2001
+From: "qwen.ai[bot]" <qwenlm-intl@service.alibaba.com>
+Date: Wed, 14 Oct 2026 11:29:21 +0000
+Subject: [PATCH] fix(e2e): create DB before Nest init (retryAttempts:1 aborted
+ app on missing db); CI pre-creates wallet_e2e
+
+---
+ .github/workflows/ci.yml | 4 ++++
+ api/test/app.e2e-spec.ts | 3 +++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 4614c94..97dec69 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -34,6 +34,10 @@ jobs:
+       - run: npm ci
+       - run: npm run build
+       - run: npm test
++      - name: Create e2e database
++        run: psql "$TEST_ADMIN_URL" -v ON_ERROR_STOP=1 -c 'CREATE DATABASE wallet_e2e' || true
++        env:
++          TEST_ADMIN_URL: postgres://postgres:postgres@localhost:5432/postgres
+       - run: npm run test:e2e
+         env:
+           TEST_ADMIN_URL: postgres://postgres:postgres@localhost:5432/postgres
+diff --git a/api/test/app.e2e-spec.ts b/api/test/app.e2e-spec.ts
+index 9863af2..131d062 100644
+--- a/api/test/app.e2e-spec.ts
++++ b/api/test/app.e2e-spec.ts
+@@ -14,6 +14,8 @@ describe('Wallet API (e2e)', () => {
+     process.env.JWT_SECRET = 'e2e-secret';
+     process.env.NODE_ENV = 'test';
+ 
++    resetDatabase();
++
+     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+     app = moduleRef.createNestApplication();
+     app.useGlobalPipes(
+@@ -26,6 +28,7 @@ describe('Wallet API (e2e)', () => {
+     );
+     await app.init();
+     ds = app.get(DataSource);
++    await recreateSchema(ds);
+   });
+ 
+   afterAll(async () => {
+-- 
+2.39.5
+
