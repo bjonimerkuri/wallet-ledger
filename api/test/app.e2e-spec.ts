@@ -13,6 +13,7 @@ describe('Wallet API (e2e)', () => {
     process.env.DATABASE_URL = DATABASE_URL;
     process.env.JWT_SECRET = 'e2e-secret';
     process.env.NODE_ENV = 'test';
+    resetDatabase();
 
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
